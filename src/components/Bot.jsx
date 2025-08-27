@@ -15,27 +15,36 @@ const Bot = () => {
 
 
     const onSendMessage = async () => {
+        if (isLoading) return;
         setIsLoading(true);
 
-        if (!input.trim()) {
+        const trimmed = input.trim();
+        if (!trimmed) {
             alert("Please enter a message.");
             setIsLoading(false);
             return;
         }
 
+        // Agregar mensaje del usuario de inmediato
+        setMessages((prev) => [...prev, { sender: "user", message: trimmed }]);
+        setInput("");
+
         try {
-            const resp = await axios.post('http://localhost:4000/bot/message', { message: input });
+            const resp = await axios.post('http://localhost:4000/bot/message', { message: trimmed });
 
             if (resp.status === 200) {
-                setMessages([...messages, resp.data]);
-                setInput("");
+                const botText = resp?.data?.bot?.text ?? resp?.data?.message ?? ""; // Se intenta obtener el texto del bot.
+                setMessages((prev) => [...prev, { sender: "bot", message: botText }]);  // Agregar respuesta del bot.
+
+            } else {
+                setMessages((prev) => [...prev, { sender: "bot", message: "Hubo un problema al procesar tu mensaje." }]);   // Mensaje de error genérico.
             }
 
             console.log("Message sent successfully:", resp.data);
 
         } catch (error) {
             console.error("Error sending message:", error);
-
+            setMessages((prev) => [...prev, { sender: "bot", message: "No se pudo enviar el mensaje. Intenta nuevamente." }]);
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +85,7 @@ const Bot = () => {
                                         : "bg-gray-800 text-gray-100 self-start"
                                         }`}
                                 >
-                                    {msg.text}
+                                    {msg.message}
                                 </div>
                             ))}
 
