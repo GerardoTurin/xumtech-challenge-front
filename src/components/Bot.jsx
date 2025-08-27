@@ -7,6 +7,7 @@ const Bot = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [conversationId, setConversationId] = useState(null);
     const messagesEndRef = useRef(null)
 
     useEffect(() => {
@@ -15,36 +16,39 @@ const Bot = () => {
 
 
     const onSendMessage = async () => {
-        if (isLoading) return;
+        //if (isLoading) return;
         setIsLoading(true);
 
-        const trimmed = input.trim();
-        if (!trimmed) {
-            alert("Please enter a message.");
+        //const trimmed = input.trim();
+        
+        if (!input.trim()) {
+            alert("Por favor ingresa un mensaje.");
             setIsLoading(false);
             return;
         }
 
-        // Agregar mensaje del usuario de inmediato
-        setMessages((prev) => [...prev, { sender: "user", message: trimmed }]);
+        setMessages((prev) => [...prev, { sender: "user", message: input }]);   // Agregar mensaje del usuario.
         setInput("");
 
         try {
-            const resp = await axios.post('http://localhost:4000/bot/message', { message: trimmed });
+            const config = conversationId ? { params: { conversationId } } : undefined;
+            const resp = await axios.post('http://localhost:4000/bot/message', { message: input }, config);
 
             if (resp.status === 200) {
+                // Guardar/actualizar conversationId devuelto por el backend
+                setConversationId((prev) => resp?.data?.conversationId ?? prev);
                 const botText = resp?.data?.bot?.text ?? resp?.data?.message ?? ""; // Se intenta obtener el texto del bot.
-                setMessages((prev) => [...prev, { sender: "bot", message: botText }]);  // Agregar respuesta del bot.
+                setMessages((prev) => [...prev, { sender: "assistant", message: botText }]);  // Agregar respuesta del bot.
 
             } else {
-                setMessages((prev) => [...prev, { sender: "bot", message: "Hubo un problema al procesar tu mensaje." }]);   // Mensaje de error genérico.
+                setMessages((prev) => [...prev, { sender: "assistant", message: "Hubo un problema al procesar tu mensaje." }]);   // Mensaje de error genérico.
             }
 
             console.log("Message sent successfully:", resp.data);
 
         } catch (error) {
             console.error("Error sending message:", error);
-            setMessages((prev) => [...prev, { sender: "bot", message: "No se pudo enviar el mensaje. Intenta nuevamente." }]);
+            setMessages((prev) => [...prev, { sender: "assistant", message: "No se pudo enviar el mensaje. Intenta nuevamente." }]);
         } finally {
             setIsLoading(false);
         }
@@ -72,8 +76,8 @@ const Bot = () => {
                     {messages.length === 0 ? (
                         // Centered welcome message
                         <div className="text-center text-gray-400 text-lg">
-                            👋 Hi, I'm{" "}
-                            <span className="text-green-500 font-semibold">BotSpoof</span>.
+                            👋 Hola, Soy{" "}
+                            <span className="text-green-500 font-semibold">Bot-Xumtech</span>.
                         </div>
                     ) : (
                         <>
@@ -107,16 +111,16 @@ const Bot = () => {
                         <input
                             type="text"
                             className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 px-2"
-                            placeholder="Ask BotSpoof..."
+                            placeholder="Que quieres saber?"
                             value={input}
-                            onChange={(e) => setInput(e.target.value)}
+                            onChange={(evt) => setInput(evt.target.value)}
                             onKeyDown={handleKeyPress}
                         />
                         <button
                             onClick={onSendMessage}
                             className="bg-green-600 hover:bg-green-700 px-4 py-1 rounded-full text-white font-medium transition-colors"
                         >
-                            Send
+                            Enviar
                         </button>
                     </div>
                 </div>
