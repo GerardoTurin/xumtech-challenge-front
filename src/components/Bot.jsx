@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 
-// Modo embebido: el chat se renderiza como un widget/ventana modal ligera dentro de un contenedor,
-// sin ocupar la pantalla completa ni usar cabecera/pie fijos al viewport.
-const Bot = ({ embedded = false }) => {
+// Versión única: widget claro embebido (no pantalla completa)
+const Bot = () => {
 
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
@@ -12,6 +11,7 @@ const Bot = ({ embedded = false }) => {
     const messagesEndRef = useRef(null)
 
     useEffect(() => {
+        // Para desplazar la vista hacia abajo cuando hay nuevos mensajes.
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages])
 
@@ -30,79 +30,53 @@ const Bot = ({ embedded = false }) => {
         setInput("");
 
         try {
-            const config = conversationId ? { params: { conversationId } } : undefined;
-            const resp = await axios.post('http://localhost:4000/bot/message', { message: input }, config);
+            const thisConversation = conversationId ? { params: { conversationId } } : undefined;   // Se extrae conversationId si existe.
+            const resp = await axios.post('http://localhost:4000/bot/message', { message: input }, thisConversation);
 
             if (resp.status === 200) {
                 // Guardar/actualizar conversationId devuelto por el backend
                 setConversationId((prev) => resp?.data?.conversationId ?? prev);
-                const botText = resp?.data?.bot?.text ?? resp?.data?.message ?? ""; // Se intenta obtener el texto del bot.
+                const botText = resp?.data?.bot?.text; //  texto del bot.
                 setMessages((prev) => [...prev, { sender: "assistant", message: botText }]);  // Agregar respuesta del bot.
 
             } else {
-                setMessages((prev) => [...prev, { sender: "assistant", message: "Hubo un problema al procesar tu mensaje." }]);   // Mensaje de error genérico.
+                setMessages((prev) => [...prev, { sender: "assistant", message: "Hubo un problema al procesar tu mensaje." }]);   
             }
 
             console.log("Message sent successfully:", resp.data);
 
         } catch (error) {
             console.error("Error sending message:", error);
-            setMessages((prev) => [...prev, { sender: "assistant", message: "No se pudo enviar el mensaje. Intenta nuevamente." }]);
+            setMessages((prev) => [...prev, { sender: "assistant", message: "No se pudo enviar el mensaje. Intenta nuevamente." }]); // Mensaje de error genérico.
+
         } finally {
             setIsLoading(false);
         }
     }
 
 
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') onSendMessage()
+    const onKeyPress = (evt) => {
+        if (evt.key === 'Enter') onSendMessage()
     }
 
 
-    // Estilos condicionales por modo
-    const outerClass = embedded
-        ? 'flex flex-col h-full bg-white text-gray-900 rounded-xl'
-        : 'flex flex-col min-h-screen bg-[#0d0d0d] text-white';
-
-    const headerClass = embedded
-        ? 'border-b border-gray-200 bg-white rounded-t-xl'
-        : 'fixed top-0 left-0 w-full border-b border-gray-800 bg-[#0d0d0d] z-10';
-
-    const mainClass = embedded
-        ? 'flex-1 overflow-y-auto p-4'
-        : 'flex-1 overflow-y-auto pt-20 pb-24 flex items-center justify-center';
-
-    const containerClass = embedded
-        ? 'w-full h-full px-0 flex flex-col space-y-3'
-        : 'w-full max-w-4xl mx-auto px-4 flex flex-col space-y-3';
-
-    const chatClass = embedded
-        ? 'border-t border-gray-200 bg-white rounded-b-xl'
-        : 'fixed bottom-0 left-0 w-full border-t border-gray-800 bg-[#0d0d0d] z-10';
-
-    const inputWrapperClass = embedded
-        ? 'w-full flex bg-gray-50 rounded-full px-4 py-2 shadow-sm'
-        : 'w-full flex bg-gray-900 rounded-full px-4 py-2 shadow-lg';
-
-    const inputClass = embedded
-        ? 'flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 px-2'
-        : 'flex-1 bg-transparent outline-none text-white placeholder-gray-400 px-2';
-
-    const assistantMsgClass = embedded
-        ? 'bg-gray-100 text-gray-900 self-start'
-        : 'bg-gray-800 text-gray-100 self-start';
-
-    const loadingClass = embedded
-        ? 'bg-gray-200 text-gray-600'
-        : 'bg-gray-700 text-gray-300';
+    // Variables Estilos
+    const outerClass = 'flex flex-col h-full bg-white text-gray-900 rounded-xl';
+    const headerClass = 'border-b border-gray-200 bg-white rounded-t-xl';
+    const mainClass = 'flex-1 overflow-y-auto p-4';
+    const containerClass = 'w-full h-full px-0 flex flex-col space-y-3';
+    const chatClass = 'border-t border-gray-200 bg-white rounded-b-xl';
+    const inputWrapperClass = 'w-full flex bg-gray-50 rounded-full px-4 py-2 shadow-sm';
+    const inputClass = 'flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 px-2';
+    const assistantMsgClass = 'bg-gray-100 text-gray-900 self-start';
+    const loadingClass = 'bg-gray-200 text-gray-600';
 
     return (
         <div className={outerClass}>
             {/*  Header */}
             <header className={headerClass}>
-                <div className={`container mx-auto flex justify-between items-center ${embedded ? 'px-4 py-3' : 'px-6 py-4'}`}>
+                <div className={`container mx-auto flex justify-between items-center px-4 py-3`}>
                     <h3 className="text-lg font-bold">Chat</h3>
-                   {/*  <FaUserCircle size={24} className="cursor-pointer" /> */}
                 </div>
             </header>
 
@@ -111,7 +85,7 @@ const Bot = ({ embedded = false }) => {
                 <div className={containerClass}>
                     {messages.length === 0 ? (
                         // Mensaje de bienvenida
-                        <div className={`text-center ${embedded ? 'text-gray-500' : 'text-gray-400'} text-lg`}>
+                        <div className={`text-center text-gray-500 text-lg`}>
                             👋 Hola, Soy <span className="text-green-600 font-semibold">Xumtech-Bot</span>.
                         </div>
                     ) : (
@@ -127,7 +101,7 @@ const Bot = ({ embedded = false }) => {
 
                             {isLoading && (
                                 <div className={`${loadingClass} px-4 py-2 rounded-xl max-w-[60%] self-start`}>
-                                    Bot is typing...
+                                    Esperando un momento...
                                 </div>
                             )}
                             <div ref={messagesEndRef} />
@@ -138,7 +112,7 @@ const Bot = ({ embedded = false }) => {
 
             {/* Input */}
             <div className={chatClass}>
-                <div className={`${embedded ? 'mx-0' : 'max-w-4xl mx-auto'} flex justify-center ${embedded ? 'px-3 py-3' : 'px-4 py-3'}`}>
+                <div className={`mx-0 flex justify-center px-3 py-3`}>
                     <div className={inputWrapperClass}>
                         <input
                             type="text"
@@ -146,7 +120,7 @@ const Bot = ({ embedded = false }) => {
                             placeholder="¿Qué quieres saber?"
                             value={input}
                             onChange={(evt) => setInput(evt.target.value)}
-                            onKeyDown={handleKeyPress}
+                            onKeyDown={onKeyPress}
                         />
                         <button
                             onClick={onSendMessage}

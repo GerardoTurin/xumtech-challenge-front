@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Bot from "./Bot";
 
-const Main = () => {
+const Layout = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
 
 
@@ -45,8 +45,8 @@ const Main = () => {
                                 ✕
                             </button>
 
-                            {/* Bot en modo embebido (tema claro) */}
-                            <Bot embedded />
+                            {/* Bot ( Chat ) */}
+                            <Bot />
                         </div>
                     </div>
                 </div>
@@ -55,4 +55,4 @@ const Main = () => {
     );
 };
 
-export default Main;
+export default Layout;
