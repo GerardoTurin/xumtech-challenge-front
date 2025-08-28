@@ -43,7 +43,7 @@ const Bot = () => {
                 setMessages((prev) => [...prev, { sender: "assistant", message: "Hubo un problema al procesar tu mensaje." }]);   
             }
 
-            console.log("Message sent successfully:", resp.data);
+            //console.log("Message sent successfully:", resp.data);
 
         } catch (error) {
             console.error("Error sending message:", error);
@@ -73,7 +73,7 @@ const Bot = () => {
 
 
 
-    
+
 
     return (
         <div className={outerClass}>
@@ -85,7 +85,7 @@ const Bot = () => {
             </header>
 
             {/* Chat area */}
-            <main className={mainClass}>
+            <section className={mainClass}>
                 <div className={containerClass}>
                     {messages.length === 0 ? (
                         // Mensaje de bienvenida
@@ -112,10 +112,10 @@ const Bot = () => {
                         </>
                     )}
                 </div>
-            </main>
+            </section>
 
             {/* Input */}
-            <div className={chatClass}>
+            <section className={chatClass}>
                 <div className={`mx-0 flex justify-center px-3 py-3`}>
                     <div className={inputWrapperClass}>
                         <input
@@ -134,7 +134,7 @@ const Bot = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     )
 }
