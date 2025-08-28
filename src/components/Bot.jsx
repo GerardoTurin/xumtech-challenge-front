@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
-import { FaUserCircle } from "react-icons/fa";
 
-const Bot = () => {
+// Modo embebido: el chat se renderiza como un widget/ventana modal ligera dentro de un contenedor,
+// sin ocupar la pantalla completa ni usar cabecera/pie fijos al viewport.
+const Bot = ({ embedded = false }) => {
 
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
@@ -16,10 +17,8 @@ const Bot = () => {
 
 
     const onSendMessage = async () => {
-        //if (isLoading) return;
         setIsLoading(true);
 
-        //const trimmed = input.trim();
         
         if (!input.trim()) {
             alert("Por favor ingresa un mensaje.");
@@ -60,41 +59,74 @@ const Bot = () => {
     }
 
 
+    // Estilos condicionales por modo
+    const outerClass = embedded
+        ? 'flex flex-col h-full bg-white text-gray-900 rounded-xl'
+        : 'flex flex-col min-h-screen bg-[#0d0d0d] text-white';
+
+    const headerClass = embedded
+        ? 'border-b border-gray-200 bg-white rounded-t-xl'
+        : 'fixed top-0 left-0 w-full border-b border-gray-800 bg-[#0d0d0d] z-10';
+
+    const mainClass = embedded
+        ? 'flex-1 overflow-y-auto p-4'
+        : 'flex-1 overflow-y-auto pt-20 pb-24 flex items-center justify-center';
+
+    const containerClass = embedded
+        ? 'w-full h-full px-0 flex flex-col space-y-3'
+        : 'w-full max-w-4xl mx-auto px-4 flex flex-col space-y-3';
+
+    const chatClass = embedded
+        ? 'border-t border-gray-200 bg-white rounded-b-xl'
+        : 'fixed bottom-0 left-0 w-full border-t border-gray-800 bg-[#0d0d0d] z-10';
+
+    const inputWrapperClass = embedded
+        ? 'w-full flex bg-gray-50 rounded-full px-4 py-2 shadow-sm'
+        : 'w-full flex bg-gray-900 rounded-full px-4 py-2 shadow-lg';
+
+    const inputClass = embedded
+        ? 'flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 px-2'
+        : 'flex-1 bg-transparent outline-none text-white placeholder-gray-400 px-2';
+
+    const assistantMsgClass = embedded
+        ? 'bg-gray-100 text-gray-900 self-start'
+        : 'bg-gray-800 text-gray-100 self-start';
+
+    const loadingClass = embedded
+        ? 'bg-gray-200 text-gray-600'
+        : 'bg-gray-700 text-gray-300';
+
     return (
-        <div className='flex flex-col min-h-screen bg-[#0d0d0d] text-white'>
-            {/* Navbar & Header */}
-            <header className="fixed top-0 left-0 w-full border-b border-gray-800 bg-[#0d0d0d] z-10">
-                <div className=" container mx-auto flex justify-between items-center px-6 py-4">
-                    <h1 className="text-lg font-bold">Bot-XumtechChallege</h1>
-                    <FaUserCircle size={30} className="cursor-pointer" />
+        <div className={outerClass}>
+            {/*  Header */}
+            <header className={headerClass}>
+                <div className={`container mx-auto flex justify-between items-center ${embedded ? 'px-4 py-3' : 'px-6 py-4'}`}>
+                    <h3 className="text-lg font-bold">Chat</h3>
+                   {/*  <FaUserCircle size={24} className="cursor-pointer" /> */}
                 </div>
             </header>
 
             {/* Chat area */}
-            <main className="flex-1 overflow-y-auto pt-20 pb-24 flex items-center justify-center">
-                <div className="w-full max-w-4xl mx-auto px-4 flex flex-col space-y-3">
+            <main className={mainClass}>
+                <div className={containerClass}>
                     {messages.length === 0 ? (
-                        // Centered welcome message
-                        <div className="text-center text-gray-400 text-lg">
-                            👋 Hola, Soy{" "}
-                            <span className="text-green-500 font-semibold">Bot-Xumtech</span>.
+                        // Mensaje de bienvenida
+                        <div className={`text-center ${embedded ? 'text-gray-500' : 'text-gray-400'} text-lg`}>
+                            👋 Hola, Soy <span className="text-green-600 font-semibold">Xumtech-Bot</span>.
                         </div>
                     ) : (
                         <>
                             {messages.map((msg, idx) => (
                                 <div
                                     key={idx}
-                                    className={`px-4 py-2 rounded-xl max-w-[75%] ${msg.sender === "user"
-                                        ? "bg-blue-600 text-white self-end"
-                                        : "bg-gray-800 text-gray-100 self-start"
-                                        }`}
+                                    className={`px-4 py-2 rounded-xl max-w-[75%] ${msg.sender === 'user' ? 'bg-blue-600 text-white self-end' : assistantMsgClass}`}
                                 >
                                     {msg.message}
                                 </div>
                             ))}
 
                             {isLoading && (
-                                <div className="bg-gray-700 text-gray-300 px-4 py-2 rounded-xl max-w-[60%] self-start">
+                                <div className={`${loadingClass} px-4 py-2 rounded-xl max-w-[60%] self-start`}>
                                     Bot is typing...
                                 </div>
                             )}
@@ -104,14 +136,14 @@ const Bot = () => {
                 </div>
             </main>
 
-            {/* Input & Footer */}
-            <footer className="fixed bottom-0 left-0 w-full border-t border-gray-800 bg-[#0d0d0d] z-10">
-                <div className="max-w-4xl mx-auto flex justify-center px-4 py-3">
-                    <div className="w-full flex bg-gray-900 rounded-full px-4 py-2 shadow-lg">
+            {/* Input */}
+            <div className={chatClass}>
+                <div className={`${embedded ? 'mx-0' : 'max-w-4xl mx-auto'} flex justify-center ${embedded ? 'px-3 py-3' : 'px-4 py-3'}`}>
+                    <div className={inputWrapperClass}>
                         <input
                             type="text"
-                            className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 px-2"
-                            placeholder="Que quieres saber?"
+                            className={inputClass}
+                            placeholder="¿Qué quieres saber?"
                             value={input}
                             onChange={(evt) => setInput(evt.target.value)}
                             onKeyDown={handleKeyPress}
@@ -124,7 +156,7 @@ const Bot = () => {
                         </button>
                     </div>
                 </div>
-            </footer>
+            </div>
         </div>
     )
 }

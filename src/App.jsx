@@ -1,12 +1,12 @@
 
 import './App.css'
-import Bot from './components/Bot'
+import Main from './components/Main'
 
 function App() {
 
   return (
     <>
-      <Bot />
+  <Main />
     </>
   )
 }
