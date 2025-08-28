@@ -15,10 +15,10 @@ Aplicación frontend construida con React y Vite, estilizada con Tailwind CSS. L
 
 ## Cómo clonar el repositorio
 
-1. Clona el repositorio (reemplaza <URL_DEL_REPO> por la URL real):
+1. Clona el repositorio:
 
 ```powershell
-git clone <URL_DEL_REPO>
+git clone https://github.com/GerardoTurin/xumtech-challenge-front.git
 ```
 
 ## Ejecutar en desarrollo
