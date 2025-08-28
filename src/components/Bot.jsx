@@ -71,6 +71,10 @@ const Bot = () => {
     const assistantMsgClass = 'bg-gray-100 text-gray-900 self-start';
     const loadingClass = 'bg-gray-200 text-gray-600';
 
+
+
+    
+
     return (
         <div className={outerClass}>
             {/*  Header */}
